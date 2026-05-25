@@ -1,0 +1,409 @@
+---
+title: "Análisis de Especies Invasoras en Canarias"
+output: github_document
+---
+
+# Introducción
+Comparar el nicho ecológico de la especie protegida *D. draco* frente a la invasora *P. setaceum*.
+
+# Configuración y carga de Datos
+```{r setup-datos, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(terra)
+library(leaflet)
+library(geodata)
+library(rgbif)
+library(sf)
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# --- PANEL DE CONTROL ---
+actualizar_datos <- FALSE  # Cambia a TRUE para descargar lo último de GBIF
+limite_puntos <- 5000      # Cuántos puntos para bajar si actualizo
+# ------------------------
+
+# 1. GESTIÓN DINÁMICA DE ESPECIES
+if (actualizar_datos == TRUE | !file.exists("puntos_rabo.csv")) {
+  message("Actualizando datos desde GBIF... esto puede tardar un poco.")
+  
+  # Descargar lo más reciente
+  rabo_new <- occ_search(scientificName = "Pennisetum setaceum", limit = limite_puntos, hasCoordinate = TRUE)
+  drago_new <- occ_search(scientificName = "Dracaena draco", limit = 2000, hasCoordinate = TRUE)
+  
+  # Sobreescribe CSV para que queden actualizados en el PC
+  write_csv(rabo_new$data, "puntos_rabo.csv")
+  write_csv(drago_new$data, "puntos_drago.csv")
+  
+  datos_rabo <- rabo_new$data
+  datos_drago <- drago_new$data
+} else {
+  # Si no hay que actualizar, lee tus archivos locales (Súper rápido)
+  datos_rabo <- read_csv("puntos_rabo.csv")
+  datos_drago <- read_csv("puntos_drago.csv")
+  message("Usando datos locales guardados en la carpeta.")
+}
+
+# 2. GESTIÓN DEL RELIEVE Y CLIMA
+can_ext <- ext(-19, -13, 27, 30)
+# 'path' apunta a tu carpeta de 10GB; si ya está ahí, no descarga nada
+clima_raw <- worldclim_global(var="bio", res=0.5, path="datos_clima/")
+
+altitud_can <- crop(clima_raw[[1]], can_ext)
+clima_can_hd <- crop(clima_raw, can_ext)
+
+# 3. PREPARACIÓN DE VECTORES Y LIMPIEZA
+puntos_rabo_vec <- vect(datos_rabo, geom = c("decimalLongitude", "decimalLatitude"), crs = "EPSG:4326")
+puntos_drago_vec <- vect(datos_drago, geom = c("decimalLongitude", "decimalLatitude"), crs = "EPSG:4326")
+
+# Creamos el objeto limpio para los gráficos (sin puntos en el mar)
+comparativa_total <- bind_rows(
+  terra::extract(clima_can_hd, puntos_drago_vec) %>% mutate(especie = "Drago"),
+  terra::extract(clima_can_hd, puntos_rabo_vec) %>% mutate(especie = "Rabo de Gato")
+) %>% drop_na()
+# --- AJUSTA ESTO EN TU PRIMER BLOQUE (setup-datos) ---
+
+# Límites estrictos para el archipiélago canario
+lon_lim <- c(-18.5, -13.3) # De El Hierro a Alegranza
+lat_lim <- c(27.5, 29.5)   # De El Hierro a La Graciosa
+
+# Aplicamos el filtro a los datos brutos
+datos_rabo_can <- datos_rabo %>% 
+  filter(decimalLongitude >= lon_lim[1] & decimalLongitude <= lon_lim[2],
+         decimalLatitude >= lat_lim[1] & decimalLatitude <= lat_lim[2])
+
+datos_drago_can <- datos_drago %>% 
+  filter(decimalLongitude >= lon_lim[1] & decimalLongitude <= lon_lim[2],
+         decimalLatitude >= lat_lim[1] & decimalLatitude <= lat_lim[2])
+
+# IMPORTANTE: También debemos actualizar los vectores que usan los gráficos
+puntos_rabo_vec <- vect(datos_rabo_can, geom = c("decimalLongitude", "decimalLatitude"), crs = "EPSG:4326")
+puntos_drago_vec <- vect(datos_drago_can, geom = c("decimalLongitude", "decimalLatitude"), crs = "EPSG:4326")
+```
+
+# Elevación
+
+```{r grafico-elevacion, message=FALSE}
+# Extraemos los valores del relieve
+env_rabo <- terra::extract(clima_can_hd, puntos_rabo_vec)
+env_drago <- terra::extract(clima_can_hd, puntos_drago_vec)
+
+# Unimos los datos
+comparativa_elev <- bind_rows(
+  env_drago %>% mutate(especie = "Drago"),
+  env_rabo %>% mutate(especie = "Rabo de Gato")
+)
+
+# REPARACIÓN AQUÍ: 
+# Usamos el nombre de la segunda columna (la de los datos) automáticamente
+nombre_columna <- names(comparativa_elev)[2]
+
+comparativa_elev_limpia <- comparativa_elev %>% 
+  drop_na() # Esto elimina los puntos que caen en el mar
+
+ggplot(comparativa_elev_limpia, aes(x = .data[[nombre_columna]], fill = especie)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() + # Añade el + aquí
+  labs(title = "Elevación del terreno", x = "Metros sobre el nivel del mar", y = "Densidad")
+```
+
+# Pendiente
+
+```{r calculo-pendiente, echo=FALSE}
+# 1. Calculamos la pendiente
+# CAMBIO: Usamos altitud_can en lugar de clima_can_hd
+pendiente <- terrain(altitud_can, v = "slope", unit = "degrees")
+
+# 2. Extraemos valores
+slope_rabo <- terra::extract(pendiente, puntos_rabo_vec)
+slope_drago <- terra::extract(pendiente, puntos_drago_vec)
+
+comparativa_geo <- bind_rows(
+  slope_rabo %>% mutate(especie = "Rabo de Gato"),
+  slope_drago %>% mutate(especie = "Drago")
+)
+
+comparativa_geo_limpia <- comparativa_geo %>% drop_na()
+
+ggplot(comparativa_geo_limpia, aes(x = especie, y = slope, fill = especie)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Preferencia de Inclinación del Terreno", y = "Pendiente (Grados)")
+```
+
+# Agua
+
+```{r factor-agua, echo=FALSE}
+# 1. Usamos la capa 12 que ya tenemos en memoria
+precip_can <- clima_can_hd[[12]]
+
+# 2. Extraemos valores
+rain_rabo <- terra::extract(precip_can, puntos_rabo_vec)
+rain_drago <- terra::extract(precip_can, puntos_drago_vec)
+
+# 3. UNIMOS Y LIMPIAMOS (Aquí creamos 'comparativa_agua_limpia')
+comparativa_agua_limpia <- bind_rows(
+  rain_drago %>% mutate(especie = "Drago"),
+  rain_rabo %>% mutate(especie = "Rabo de Gato")
+) %>% drop_na()
+
+# 4. GRÁFICO (Ahora sí encontrará el objeto)
+ggplot(comparativa_agua_limpia, aes(x = .data[[names(precip_can)]], fill = especie)) +
+  geom_histogram(binwidth = 25, color = "white", position = "stack", alpha = 0.8) +
+  scale_x_continuous(limits = c(100, 700), 
+                     breaks = seq(100, 700, by = 100)) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Drago" = "blue", "Rabo de Gato" = "red")) +
+  labs(title = "Distribución por Disponibilidad Hídrica (Zoom 100-700mm)",
+       x = "Precipitación Anual (mm)",
+       y = "Nº de Registros")
+```
+
+# Orientación
+
+```{r rosa-vientos, echo=FALSE}
+# 1. Calculamos Orientación (usando la capa única de altitud)
+orientacion <- terrain(altitud_can, v = "aspect", unit = "degrees")
+
+# 2. Extraemos valores
+asp_rabo <- terra::extract(orientacion, puntos_rabo_vec)
+asp_drago <- terra::extract(orientacion, puntos_drago_vec)
+
+# 3. UNIMOS los datos (Aquí creamos 'comparativa_asp')
+comparativa_asp <- bind_rows(
+  asp_drago %>% mutate(especie = "Drago"),
+  asp_rabo %>% mutate(especie = "Rabo de Gato")
+)
+
+# 4. LIMPIAMOS los NAs (Aquí creamos 'comparativa_asp_limpia')
+comparativa_asp_limpia <- comparativa_asp %>% drop_na()
+
+# 5. Gráfico (Usamos el objeto limpio)
+ggplot(comparativa_asp_limpia, aes(x = aspect, fill = especie)) +
+  geom_histogram(binwidth = 20, color = "white") +
+  coord_polar(start = 0) +
+  theme_minimal() +
+  scale_x_continuous(breaks = seq(0, 360, by = 45), 
+                     labels = c("N", "NE", "E", "SE", "S", "SO", "O", "NO", "N")) +
+  labs(title = "Exposición de las laderas (Solana vs Umbría)", x = "Orientación")
+```
+
+# Mapa de Densidad de Invasión
+```{r mapa-pro, echo=FALSE}
+# 1. Cargamos la librería necesaria
+if(!require(leaflet.extras)) install.packages("leaflet.extras")
+library(leaflet.extras)
+
+# 2. Creamos el mapa
+leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  
+  # CAPA DE CALOR: Muestra la intensidad del Rabo de Gato
+  addHeatmap(data = datos_rabo_can, 
+             lng = ~decimalLongitude, lat = ~decimalLatitude,
+             blur = 20,     # Suavizado de la mancha
+             max = 0.05,    # Sensibilidad al calor
+             radius = 15,   # Tamaño del radio de cada punto
+             group = "Calor Invasión") %>%
+  
+  # CAPA DE PUNTOS: El Drago como referencia de conservación
+  addCircleMarkers(data = datos_drago_can, 
+                   lng = ~decimalLongitude, lat = ~decimalLatitude,
+                   radius = 2, color = "blue", stroke = FALSE, fillOpacity = 0.5,
+                   group = "Localizaciones Drago") %>%
+  
+  # Control para encender/apagar capas
+  addLayersControl(
+    overlayGroups = c("Calor Invasión", "Localizaciones Drago"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+# Infraestructuras
+
+```{r carreteras, echo=FALSE, message=FALSE}
+library(geodata)
+
+# El cambio está aquí: de "highway" a "highways"
+carreteras_es <- osm("Spain", var = "highways", path = "datos_clima/")
+
+# El resto sigue igual
+carreteras_can <- crop(carreteras_es, can_ext)
+
+# Visualización rápida
+plot(altitud_can, col = gray.colors(10), main = "Red Viaria y Especies")
+lines(carreteras_can, col = "black", lwd = 0.5)
+points(puntos_rabo_vec, col = "red", cex = 0.2)
+```
+
+# Carreteras
+
+```{r prep-distancias, echo=FALSE}
+# 1. Convertimos las carreteras a un formato más rápido para cálculos
+carreteras_sf <- st_as_sf(carreteras_can)
+
+# 2. Nota para mañana: 
+# Usaremos st_distance para saber a cuántos metros está cada punto de la carretera.
+# Esto nos permitirá crear un gráfico de "Distancia a la carretera vs Frecuencia"
+```
+
+# Distancias
+
+```{r calculo-distancias, echo=FALSE, message=FALSE}
+library(sf)
+library(tidyverse)
+
+# 2. Convertimos a formato 'sf' USANDO LOS DATOS FILTRADOS
+puntos_rabo_sf <- st_as_sf(datos_rabo_can, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+puntos_drago_sf <- st_as_sf(datos_drago_can, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+carreteras_sf <- st_as_sf(carreteras_can)
+
+# 3. PROYECTAMOS a UTM (Zona 28N) para medir en METROS
+puntos_rabo_utm <- st_transform(puntos_rabo_sf, crs = 32628)
+puntos_drago_utm <- st_transform(puntos_drago_sf, crs = 32628)
+carreteras_utm <- st_transform(carreteras_sf, crs = 32628)
+
+# 4. CALCULAMOS LA DISTANCIA (Esto ahora irá mucho más rápido)
+dist_rabo <- st_distance(puntos_rabo_utm, carreteras_utm)
+dist_drago <- st_distance(puntos_drago_utm, carreteras_utm)
+
+# 5. Extraemos la distancia mínima
+# Usamos 'as.numeric' para quitar la unidad "m" y que ggplot no se confunda
+dist_min_rabo <- apply(dist_rabo, 1, min)
+dist_min_drago <- apply(dist_drago, 1, min)
+
+# 6. UNIMOS para el gráfico final
+comparativa_dist <- bind_rows(
+  data.frame(dist_carretera = as.numeric(dist_min_rabo), especie = "Rabo de Gato"),
+  data.frame(dist_carretera = as.numeric(dist_min_drago), especie = "Drago")
+)
+```
+
+# Análisis de la Invasión en Carreteras
+
+Con los cálculos de distancia terminados, generamos la visualización definitiva. Si el Rabo de Gato usa las carreteras como vía de expansión, veremos su densidad acumulada muy cerca del eje cero.
+
+```{r grafico-distancias, echo=FALSE}
+# Generamos el gráfico de densidad con escala logarítmica
+ggplot(comparativa_dist, aes(x = dist_carretera, fill = especie)) +
+  geom_density(alpha = 0.5) +
+  scale_x_log10(labels = scales::unit_format(unit = "m")) + 
+  theme_minimal() +
+  labs(title = "Cercanía a la Red Viaria",
+       subtitle = "Comparativa de proximidad a infraestructuras de transporte",
+       x = "Distancia a la carretera más cercana (escala log)",
+       y = "Densidad de registros") +
+  scale_fill_manual(values = c("Drago" = "blue", "Rabo de Gato" = "red"))
+```
+
+### Tabla Resumen de Distancias
+```{r tabla-resumen, echo=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+
+# 1. Calculamos los estadísticos por especie
+tabla_stats <- comparativa_dist %>%
+  group_by(especie) %>%
+  summarise(
+    Puntos_Totales = n(),
+    Distancia_Minima = min(dist_carretera),
+    Mediana_Dist = median(dist_carretera),
+    Media_Dist = mean(dist_carretera),
+    Distancia_Maxima = max(dist_carretera)
+  ) %>%
+  mutate(across(where(is.numeric), ~ round(., 2)))
+
+# 2. Formateamos la tabla para que quede elegante en el informe
+kable(tabla_stats, 
+      col.names = c("Especie", "Nº Registros", "Mínima (m)", "Mediana (m)", "Media (m)", "Máxima (m)"),
+      caption = "Tabla 1: Análisis comparativo de proximidad a la red viaria (en metros)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = T, border_right = T) %>%
+  column_spec(4, background = "#D3D3D3") # Resaltamos la Mediana por ser el dato más fiable
+```
+---
+
+### Histograma de Invasión (Conteo Real)
+En este gráfico observamos la cantidad absoluta de registros. Las barras apiladas permiten ver cómo el Rabo de Gato domina numéricamente los primeros metros tras el asfalto.
+
+```{r grafico-distancias-conteo, echo=FALSE}
+ggplot(comparativa_dist, aes(x = dist_carretera, fill = especie)) +
+  # Cambiamos geom_density por geom_histogram para ver conteos
+  geom_histogram(bins = 50, color = "white", position = "stack") + 
+  scale_x_log10(labels = scales::unit_format(unit = "m")) + 
+  theme_minimal() +
+  scale_fill_manual(values = c("Drago" = "#2c7fb8", "Rabo de Gato" = "#e31a1c")) +
+  labs(title = "Frecuencia de Registros por Distancia",
+       subtitle = "Conteo total de individuos en cada rango de proximidad",
+       x = "Distancia a la carretera (escala log)",
+       y = "Número total de plantas (N)")
+```
+
+# Gráfico de Boxplot con Significancia Estadística
+
+```{r grafico-significancia, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggpubr)
+
+# Creamos el boxplot comparativo
+ggplot(comparativa_dist, aes(x = especie, y = dist_carretera, fill = especie)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = NA) + # Ocultamos outliers para ver mejor la caja
+  stat_compare_means(method = "wilcox.test", 
+                     label = "p.signif", 
+                     label.x = 1.5, 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns"))) +
+  scale_y_log10(labels = scales::unit_format(unit = "m")) +
+  scale_fill_manual(values = c("Drago" = "#3498db", "Rabo de Gato" = "#e74c3c")) +
+  theme_pubr() + # Un tema limpio de publicación científica
+  labs(title = "Diferencias en el Nicho Antrópico",
+       subtitle = "Comparativa de distancia a carreteras con test de significancia",
+       x = "Especie",
+       y = "Distancia (escala log)")
+```
+
+# Conclusiones del Análisis Espacial
+## 📊 Resumen de Resultados
+
+Tras analizar `r nrow(datos_rabo_can) + nrow(datos_drago_can)` registros biológicos, se observan las siguientes tendencias:
+
+1. **Vínculo con Infraestructuras**: La especie *P. setaceum* presenta una mediana de proximidad a carreteras significativamente inferior a *D. draco*, confirmando su carácter de especie oportunista vinculada a corredores de transporte.
+2. **Resistencia Hídrica**: El histograma de precipitación muestra que el Rabo de Gato domina los nichos por debajo de los 250mm anuales, donde la presencia de Drago es anecdótica o ligada a cultivo.
+3. **Ocupación del Relieve**: Mientras que el Drago muestra una preferencia marcada por orientaciones específicas (posiblemente buscando humedad), la especie invasora muestra una distribución radial más homogénea, lo que indica una mayor plasticidad ecológica.
+
+# Análisis Estadístico de Significancia
+```{r estadistica, echo=FALSE}
+# 1. Realizamos el Test de Wilcoxon para la Distancia a Carreteras
+test_distancia <- wilcox.test(dist_carretera ~ especie, data = comparativa_dist)
+
+# 2. Realizamos el Test para la Altitud (por si acaso)
+test_altitud <- wilcox.test(wc2.1_30s_bio_1 ~ especie, data = comparativa_elev_limpia)
+
+# 3. Mostramos los resultados de forma elegante
+resultados_stats <- data.frame(
+  Variable = c("Distancia a Carreteras", "Altitud"),
+  P_Valor = c(test_distancia$p.value, test_altitud$p.value)
+)
+
+print(resultados_stats)
+```
+# Explicación:
+El análisis estadístico mediante el test de Wilcoxon-Mann-Whitney reveló diferencias altamente significativas entre ambas especies. En cuanto a la altitud, la segregación de nichos es extrema ($p < 0.001$). Más relevante para la hipótesis de dispersión antrópica es el resultado de la distancia a la red viaria ($p = 4.39 \times 10^{-5}$), lo que permite rechazar la hipótesis nula y confirmar que P. setaceum muestra una asociación preferencial con las infraestructuras de transporte.
+
+# Discusión de los Hallazgos
+El análisis espacial revela una clara diferenciación de nichos entre D. draco (especie protegida) y P. setaceum (invasora). Mientras que el Drago muestra una distribución ligada a condiciones climáticas específicas y mayor altitud, el Rabo de Gato exhibe una plasticidad ecológica superior.La evidencia estadística ($p < 0.05$) confirma que el Rabo de Gato se localiza significativamente más cerca de las carreteras. Esto sugiere que la red viaria no solo fragmenta el hábitat, sino que actúa como un corredor de dispersión antrópica, facilitando el transporte de semillas por el flujo de vehículos y las tareas de mantenimiento de las cunetas.
+
+
+```{r exportar-datos, echo=FALSE}
+# 1. Crear una carpeta simple
+dir.create("datos_finales_r", showWarnings = FALSE)
+
+# 2. Guardar los datos de las especies (las coordenadas ya van dentro)
+write.csv(datos_rabo_can, "datos_finales_r/puntos_rabo_canarias.csv", row.names = FALSE)
+write.csv(datos_drago_can, "datos_finales_r/puntos_drago_canarias.csv", row.names = FALSE)
+
+# 3. Para las carreteras, como no se pueden guardar en CSV fácilmente, 
+# las volveremos a descargar en QGIS el lunes (es más rápido y seguro).
+
+message("--- ¡TABLAS GUARDADAS! Revisa la carpeta 'datos_finales_r' ---")
+```
