@@ -35,7 +35,7 @@ Para validar la robustez de estos datos, se aplicó un test no paramétrico de *
 * **Altitud:** $p = 4.20 \times 10^{-53}$ (Confirma una segregación matemática de nichos absoluta).
 
 
-![Gráfico de Carreteras e Invasión]({91C94624-9FD9-4664-ADFC-2E8210CA39AD})
+![Gráfico de Carreteras e Invasión]({91C94624-9FD9-4664-ADFC-2E8210CA39AD}.png)
 
 ---
 
@@ -55,7 +55,7 @@ Los datasets optimizados se migraron a **QGIS**, reproyectando las capas al sist
 * **Tamadaba (Gran Canaria):** 12,69 Ha
 
 
-![Mapa de Impacto en los ENP de Canarias](2141c7d7-b8c6-440a-9233-4f06ed642041)
+![Mapa de Impacto en los ENP de Canarias](2141c7d7-b8c6-440a-9233-4f06ed642041.png)
 
 ---
 
