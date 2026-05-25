@@ -37,6 +37,7 @@ Para validar la robustez de estos datos, se aplicó un test no paramétrico de *
 
 ![Gráfico de Carreteras e Invasión]({91C94624-9FD9-4664-ADFC-2E8210CA39AD}.png)
 
+> 💻 **Nota técnica de reproducibilidad:** Puedes consultar, descargar y ejecutar el código fuente original de R Markdown con las funciones de limpieza y los tests estadísticos haciendo [clic aquí](script_analisis.Rmd)
 ---
 
 ### Bloque 3: Fase QGIS – Geoprocesamiento e Impacto Territorial
