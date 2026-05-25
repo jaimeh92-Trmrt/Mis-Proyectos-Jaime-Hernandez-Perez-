@@ -1,4 +1,4 @@
-# Modelización Espacial y Análisis de Degradación Ecológica por *Pennisetum setaceum* en el Archipiélago Canario
+# Modelización Espacial y Análisis de Degradación Ecológica por *Cenchrus setaceus* (*Pennisetum setaceum*) en el Archipiélago Canario
 
 Este proyecto presenta un flujo de trabajo analítico e integrado para evaluar el impacto ambiental y la expansión de la especie exótica invasora (EEI) **Rabo de Gato (*Pennisetum setaceum*)** en las Islas Canarias. Utilizando técnicas de biogeografía comparada, se contrasta su comportamiento espacial frente al endemismo protegido **Drago Canario (*Dracaena draco*)**.
 
@@ -31,13 +31,17 @@ Se calculó la distancia geométrica euclidiana desde cada registro hasta el eje
 * **Rabo de Gato (337 registros):** Distancia mediana de **193.88 metros**.
 
 Para validar la robustez de estos datos, se aplicó un test no paramétrico de **Wilcoxon-Mann-Whitney**:
-* **Distancia a Carreteras:** $p = 4.39 \times 10^{-5}$ (Altamente significativo, confirma el asfalto como corredor de dispersión).
-* **Altitud:** $p = 4.20 \times 10^{-53}$ (Confirma una segregación matemática de nichos absoluta).
+* **Distancia a Carreteras:** p = 4.39 x 10^{-5} (Altamente significativo, confirma el asfalto como corredor de dispersión).
+* **Altitud:** p = 4.20 x 10^{-53} (Confirma una segregación matemática de nichos absoluta).
 
 
 ![Gráfico de Carreteras e Invasión]({91C94624-9FD9-4664-ADFC-2E8210CA39AD}.png)
 
+
+
 💻 **Nota técnica de reproducibilidad:** Puedes consultar, descargar y ejecutar el código fuente original de R Markdown con las funciones de limpieza y los tests estadísticos haciendo [clic aquí](script_analisis.Rmd)
+
+
 ---
 
 ### Bloque 3: Fase QGIS – Geoprocesamiento e Impacto Territorial
@@ -62,7 +66,7 @@ Los datasets optimizados se migraron a **QGIS**, reproyectando las capas al sist
 
 ### Bloque 4: Fase Google Earth Engine – Teledetección Multiespectral
 
-Utilizando las zonas críticas de QGIS como máscaras de recorte, se programaron scripts en la nube de **Google Earth Engine (GEE)** para procesar la serie temporal de imágenes de reflectancia en superficie de la constelación **Sentinel-2 (Copernicus)**, aplicando máscaras de calidad atmosférica (*QA60*).
+Utilizando las zonas críticas de QGIS como máscaras de recorte, se programaron scripts en la nube de **Google Earth Engine (GEE)** para procesar la serie temporal de imágenes de reflectancia en superficie de la constelación Sentinel-2 (Copernicus), aplicando máscaras de calidad atmosférica (*QA60*).
 
 Se modeló de forma automatizada la evolución del **Índice de Vegetación de Diferencia Normalizada (NDVI)**:
 * **Comportamiento en Diente de Sierra:** La serie histórica desveló un patrón estacional extremo. La invasora genera picos de actividad fotosintética en épocas húmedas, pero sufre un desplome vertical en el periodo estival, cayendo a valores mínimos críticos en el entorno de **0.30**.
