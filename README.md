@@ -55,7 +55,7 @@ Los datasets optimizados se migraron a **QGIS**, reproyectando las capas al sist
 * **Tamadaba (Gran Canaria):** 12,69 Ha
 
 
-![Mapa de Impacto en los ENP de Canarias](2141c7d7-b8c6-440a-9233-4f06ed642041.png)
+![Mapa de Impacto en los ENP de Canarias](2141c7d7-b8c6-440a-9233-4f06ed642041.jpg)
 
 ---
 
