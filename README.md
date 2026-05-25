@@ -34,8 +34,8 @@ Para validar la robustez de estos datos, se aplicó un test no paramétrico de *
 * **Distancia a Carreteras:** $p = 4.39 \times 10^{-5}$ (Altamente significativo, confirma el asfalto como corredor de dispersión).
 * **Altitud:** $p = 4.20 \times 10^{-53}$ (Confirma una segregación matemática de nichos absoluta).
 
-*Nota: Inserta aquí tu gráfico de RStudio usando la sintaxis de abajo:*
-![Gráfico de Carreteras e Invasión](ruta/a/tu/grafico_carreteras.png)
+
+![Gráfico de Carreteras e Invasión]({91C94624-9FD9-4664-ADFC-2E8210CA39AD})
 
 ---
 
@@ -54,8 +54,8 @@ Los datasets optimizados se migraron a **QGIS**, reproyectando las capas al sist
 * **Nublo (Gran Canaria):** 18,43 Ha
 * **Tamadaba (Gran Canaria):** 12,69 Ha
 
-*Nota: Inserta aquí tu mapa final exportado de QGIS:*
-![Mapa de Impacto en los ENP de Canarias](ruta/a/tu/mapa_qgis.png)
+
+![Mapa de Impacto en los ENP de Canarias](2141c7d7-b8c6-440a-9233-4f06ed642041)
 
 ---
 
@@ -67,8 +67,7 @@ Se modeló de forma automatizada la evolución del **Índice de Vegetación de D
 * **Comportamiento en Diente de Sierra:** La serie histórica desveló un patrón estacional extremo. La invasora genera picos de actividad fotosintética en épocas húmedas, pero sufre un desplome vertical en el periodo estival, cayendo a valores mínimos críticos en el entorno de **0.30**.
 * **Diagnóstico Biofísico:** Este agostamiento masivo de la planta invasora desploma la resiliencia del suelo, incrementando exponencialmente el riesgo de erosión hídrica superficial y generando un volumen crítico de combustible fino altamente inflamable en zonas de alto valor ecológico.
 
-*Nota: Inserta aquí tu gráfica de NDVI exportada de GEE:*
-![Serie Temporal de NDVI en GEE](ruta/a/tu/grafica_ndvi.png)
+![Serie Temporal de NDVI en GEE](ee-chart.png)
 
 ---
 
