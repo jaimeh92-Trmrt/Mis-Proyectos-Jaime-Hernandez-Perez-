@@ -79,7 +79,7 @@ Tras cruzar los datos biológicos con el modelo nulo de control, se obtuvieron l
 
 Para interpretar estos números se generó un gráfico de densidades en escala logarítmica, contrastando la distribución real frente al modelo aleatorio nulo:
 
-![Análisis Crítico de Densidad Espacial](Biodiversidad Real vs distibución aleatoria.png)
+![Análisis Crítico de Densidad Espacial](Biodiversidad_Real_vs_Distribucion_Aleatoria.png)
 
 El análisis del gráfico desmonta la hipótesis simplista del impacto lineal de las infraestructuras y revela dos fenómenos metodológicos clave:
 
