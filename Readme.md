@@ -88,8 +88,31 @@ El análisis del gráfico desmonta la hipótesis simplista del impacto lineal de
 3. **El Sesgo del Observador:** La curva de las **Aves** (turquesa) presenta un pico vertical y estrecho pegado a las carreteras, evidenciando el sesgo de accesibilidad de la ciencia ciudadana (muestreo cómodo desde vías). Por el contrario, los **Artrópodos** (morado) presentan una curva mucho más achatada y distribuida hacia el interior, reflejando el rigor de los muestreos sistemáticos llevados a cabo por profesionales en zonas de difícil acceso.
 
 ---
+---
+
+<h2>Aplicación Práctica: Detección de Vacíos de Información (Gap Analysis)</h2>
+
+Más allá del análisis de distancias, este pipeline cartográfico se ha diseñado para actuar como una herramienta de toma de decisiones en la gestión ambiental, específicamente en la **identificación de vacíos de datos cartográficos**. 
+
+Al cruzar la densidad de puntos reales de GBIF con la red viaria, el modelo permite aislar geográficamente aquellas cuadrículas de alto valor ecológico que presentan un número de registros cercano a cero. Esto transforma el análisis estadístico en una guía de acción en el territorio.
+
+<h3>Estrategia para Proyectos de Recogida de Datos en Campo:</h3>
+
+* **Zonas de Sombra Inaccesibles:** El análisis demuestra la existencia de "puntos ciegos" en el interior de los macizos más abruptos de las islas (zonas alejadas de la red `gis_osm_roads_free_1`). El proyecto sirve como base científica para justificar la necesidad de financiar expediciones botánicas y entomológicas profesionales en estas áreas de difícil acceso.
+* **Optimización de Ciencia Ciudadana:** Al geolocalizar los cuadrantes donde faltan datos de aves pero que están relativamente cerca de senderos homologados, se pueden diseñar campañas de "Ciencia Ciudadana Dirigida", incentivando a los usuarios de plataformas como eBird o iNaturalist a realizar avistamientos en zonas prioritarias en lugar de repetir las rutas tradicionales hiper-muestreadas.
+* **Planes de Acción y Financiación:** Este enfoque metodológico ofrece a las administraciones públicas (Cabildos, Consejerías de Transición Ecológica) una cartografía de prioridades basada en evidencias estadísticas para la inversión eficiente en la recolección de datos sobre biodiversidad.
+
+---
+
+<h2>🔮 Futuras Líneas de Trabajo (Explotación del Dataset)</h2>
+
+La base de datos descargada de Geofabrik contiene múltiples capas vectoriales adicionales que abren la puerta a expansiones automáticas de este pipeline:
+* **Análisis por Categoría de Vía:** Clasificar el impacto segregando las autopistas principales de las pistas de tierra forestales para evaluar si el "efecto huida" varía según el índice de tráfico.
+* **Modelado de Usos del Suelo:** Cruzar los puntos de presencia biológica con las capas de áreas urbanas, zonas industriales y coberturas vegetales del suelo presentes en el `.shp` para desarrollar un Modelo de Idoneidad de Hábitat (SDM) completo.
+
+---
 
 <h2>Conclusiones </h2>
 
 *  Este proyecto demuestra que el análisis masivo de datos espaciales en plataformas globales como GBIF requiere obligatoriamente una deconstrucción de sesgos. Aplicar algoritmos GIS de forma automática sin un modelo de control nulo conduce a conclusiones ecológicas erróneas.
-* **Habilidades Demostradas:** Capacidad de optimización de código en R para computación pesada local, diseño metodológico de modelos nulos espaciales, integración avanzada R-QGIS y análisis crítico orientado a la resolución de problemas metodológicos complejos.
+* **Habilidades Demostradas:** Capacidad de optimización de código en R para computación pesada local, diseño metodológico de modelos nulos espaciales, integración avanzada R-QGIS y análisis crítico orientado a la resolución de problemas y propuestas de proyectos en el mundo real.
