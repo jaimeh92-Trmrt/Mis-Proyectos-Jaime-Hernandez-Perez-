@@ -96,6 +96,8 @@ Más allá del análisis de distancias, este pipeline cartográfico se ha diseñ
 
 Al cruzar la densidad de puntos reales de GBIF con la red viaria, el modelo permite aislar geográficamente aquellas cuadrículas de alto valor ecológico que presentan un número de registros cercano a cero. Esto transforma el análisis estadístico en una guía de acción en el territorio.
 
+![Mapa de Vacíos de Información en Tenerife](outputs/plots/Map_Gap_analysis_Tenerife.png)
+
 <h3>Estrategia para Proyectos de Recogida de Datos en Campo:</h3>
 
 * **Zonas de Sombra Inaccesibles:** El análisis demuestra la existencia de "puntos ciegos" en el interior de los macizos más abruptos de las islas (zonas alejadas de la red `gis_osm_roads_free_1`). El proyecto sirve como base científica para justificar la necesidad de financiar expediciones botánicas y entomológicas profesionales en estas áreas de difícil acceso.
