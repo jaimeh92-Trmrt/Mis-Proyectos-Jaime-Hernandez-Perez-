@@ -96,7 +96,7 @@ Más allá del análisis de distancias, este pipeline cartográfico se ha diseñ
 
 Al cruzar la densidad de puntos reales de GBIF con la red viaria, el modelo permite aislar geográficamente aquellas cuadrículas de alto valor ecológico que presentan un número de registros cercano a cero. Esto transforma el análisis estadístico en una guía de acción en el territorio.
 
-![Mapa de Vacíos de Información en Tenerife](outputs/plots/Map_Gap_analysis_Tenerife.png)
+![Mapa de Vacíos de Información en Tenerife](Map_Gap_analysis_Tenerife.png)
 
 <h3>Estrategia para Proyectos de Recogida de Datos en Campo:</h3>
 
