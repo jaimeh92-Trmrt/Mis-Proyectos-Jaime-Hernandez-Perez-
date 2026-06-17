@@ -96,7 +96,7 @@ Más allá del análisis de distancias, este pipeline cartográfico se ha diseñ
 
 Al cruzar la densidad de puntos reales de GBIF con la red viaria, el modelo permite aislar geográficamente aquellas cuadrículas de alto valor ecológico que presentan un número de registros cercano a cero. Esto transforma el análisis estadístico en una guía de acción en el territorio.
 
-![Mapas de densidad de registros en GBIF por cuadrícula 1x1km en Espacios Naturales Protegidos](outputs/plots/Provincia_Tenerife_Resgistros.jpg)
+![Mapas de densidad de registros en GBIF por cuadrícula 1x1km en Espacios Naturales Protegidos](Provincia_Tenerife_Resgistros.png)
 
 <h3>Estrategia para Proyectos de Recogida de Datos en Campo:</h3>
 
