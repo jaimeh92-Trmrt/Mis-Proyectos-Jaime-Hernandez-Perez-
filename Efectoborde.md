@@ -79,7 +79,7 @@ Tras cruzar los datos biológicos con el modelo nulo de control, se obtuvieron l
 
 Para interpretar estos números se generó un gráfico de densidades en escala logarítmica, contrastando la distribución real frente al modelo aleatorio nulo:
 
-![Análisis Crítico de Densidad Espacial](Biodiversidad_Real_vs_Distribucion_Aleatoria.png)
+![Gráfico de Densidades - Curvas de Sesgo](Biodiversidad_Real_vs_Distribucion_Aleatoria.png)
 
 El análisis del gráfico desmonta la hipótesis simplista del impacto lineal de las infraestructuras y revela dos fenómenos metodológicos clave:
 
@@ -96,7 +96,7 @@ Más allá del análisis de distancias, este pipeline cartográfico se ha diseñ
 
 Al cruzar la densidad de puntos reales de GBIF con la red viaria, el modelo permite aislar geográficamente aquellas cuadrículas de alto valor ecológico que presentan un número de registros cercano a cero. Esto transforma el análisis estadístico en una guía de acción en el territorio.
 
-![Mapa de Vacíos de Información en Tenerife](Map_Gap_analysis_Tenerife.png)
+![Mapas de densidad de registros en GBIF por cuadrícula 1x1km en Espacios Naturales Protegidos](outputs/plots/Provincia_Tenerife_Resgistros.jpg)
 
 <h3>Estrategia para Proyectos de Recogida de Datos en Campo:</h3>
 
