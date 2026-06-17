@@ -51,6 +51,78 @@ El dataset original de aves presentaba un volumen crítico de **~5 GB**, inviabl
 * **Procesamiento por Bloques:** Se diseñó un script en R utilizando funciones de lectura indexada para trocear el archivo original. El algoritmo leyó y filtró los registros en memoria en un bucle optimizado durante más de 1 hora de computación local.
 * **Filtros Aplicados:** Restringido estrictamente al periodo **2000 - 2026**, exclusión de registros marinos erróneos mediante una máscara espacial y reducción dimensional de variables clave (`scientificName`, `decimalLatitude`, `decimalLongitude`, `year`).
 
+## 💻 Código Fuente Principal (Scripts de R)
+
+A continuación se detallan los bloques de código clave desarrollados para automatizar el pipeline de datos, desde la limpieza masiva hasta el cálculo geométrico y el modelo nulo.
+
+<details>
+<summary><b>⏱️ Script 01: Limpieza por Bloques (Chunk Processing) y Filtro Espacial</b></summary>
+
+```r
+library(tidyverse)
+library(sf)
+
+# Configuración de lectura por bloques para optimizar RAM
+file_path <- "data/raw/gbif_canarias_aves.csv"
+chunk_size <- 50000
+processed_data <- list()
+
+# Bucle de lectura indexada (Simulación del núcleo del algoritmo)
+# Filas filtradas por año >= 2000 y delimitación geográfica
+read_chunks_and_filter <- function(path, size) {
+  # [Aquí va tu función real de R que corrió durante 1 hora]
+  # Filtrado temporal: year >= 2000 & year <= 2026
+  # Reducción dimensional: scientificName, decimalLatitude, decimalLongitude
+}
+```
+
+```
+
+library(sf)
+library(tidyverse)
+
+# 1. Cargar capas y reproyectar a REGCAN95 / UTM zona 28N (CRS: 32628)
+canarias_roads <- st_read("data/processed/roads.gpkg") %>% st_transform(32628)
+biodiversity_points <- st_read("data/processed/points.gpkg") %>% st_transform(32628)
+
+# 2. Algoritmo de búsqueda del vecino más cercano y cálculo métrico
+print("Calculando distancias métricas Euclidianas...")
+
+# Buscar el índice de la carretera más cercana para cada punto
+nearest_idx <- st_nearest_feature(biodiversity_points, canarias_roads)
+
+# Calcular la distancia real en metros (HubDist)
+biodiversity_points$HubDist <- as.numeric(st_distance(biodiversity_points, canarias_roads[nearest_idx, ], by_element = TRUE))
+
+# Exportar dataset final indexado
+st_write(biodiversity_points, "data/processed/biodiversity_with_distance.gpkg", delete_dsn = TRUE)
+
+r```
+library(tidyverse)
+library(sf)
+
+# 1. Generación del grupo control aleatorio (100.000 puntos)
+set.seed(42) # Garantizar reproducibilidad
+islas_polygon <- st_read("data/processed/limites_islas.gpkg") %>% st_transform(32628)
+
+random_points <- st_sample(islas_polygon, size = 100000) %>% 
+  st_as_sf() %>% 
+  mutate(Group = "Modelo Nulo (Azar)")
+
+# 2. Renderizado del Perfil de Densidad en escala logarítmica
+ggplot(data = final_dataset, aes(x = HubDist, color = Group, fill = Group)) +
+  geom_density(alpha = 0.15, linewidth = 0.8) +
+  scale_x_log10(labels = scales::comma) +
+  labs(
+    title = "Distribución de Frecuencias: Biodiversidad vs. Modelo Nulo",
+    x = "Distancia Métrica a la Carretera Más Cercana (metros, escala log10)",
+    y = "Densidad de Probabilidad"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("Aves" = "#2ca02c", "Artrópodos" = "#9467bd", "Plantas" = "#1f77b4", "Modelo Nulo" = "#8c564b"))
+```
+
+
 <h3>Fase 2: Geoprocesamiento y Análisis de Proximidad (QGIS / SF)</h3>
 
 Con los datasets limpios y homogeneizados en formato GeoPackage (`.gpkg`), se procedió al análisis espacial métrico:
