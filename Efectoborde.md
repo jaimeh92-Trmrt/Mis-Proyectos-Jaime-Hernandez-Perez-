@@ -75,7 +75,10 @@ read_chunks_and_filter <- function(path, size) {
   # Reducción dimensional: scientificName, decimalLatitude, decimalLongitude
 }
 ```
-
+<details>
+  
+<details>
+  
 ```
 
 library(sf)
@@ -97,7 +100,11 @@ biodiversity_points$HubDist <- as.numeric(st_distance(biodiversity_points, canar
 # Exportar dataset final indexado
 st_write(biodiversity_points, "data/processed/biodiversity_with_distance.gpkg", delete_dsn = TRUE)
 
-r```
+```
+<details>
+
+```
+
 library(tidyverse)
 library(sf)
 
@@ -122,6 +129,8 @@ ggplot(data = final_dataset, aes(x = HubDist, color = Group, fill = Group)) +
   scale_color_manual(values = c("Aves" = "#2ca02c", "Artrópodos" = "#9467bd", "Plantas" = "#1f77b4", "Modelo Nulo" = "#8c564b"))
 
 ```
+
+<details>
 
 
 <h3>Fase 2: Geoprocesamiento y Análisis de Proximidad (QGIS / SF)</h3>
