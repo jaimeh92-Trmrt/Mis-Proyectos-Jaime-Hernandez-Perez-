@@ -77,8 +77,6 @@ read_chunks_and_filter <- function(path, size) {
 ```
 <details>
   
-<details>
-  
 ```
 
 library(sf)
@@ -102,7 +100,7 @@ st_write(biodiversity_points, "data/processed/biodiversity_with_distance.gpkg", 
 
 ```
 <details>
-
+  
 ```
 
 library(tidyverse)
@@ -129,9 +127,6 @@ ggplot(data = final_dataset, aes(x = HubDist, color = Group, fill = Group)) +
   scale_color_manual(values = c("Aves" = "#2ca02c", "Artrópodos" = "#9467bd", "Plantas" = "#1f77b4", "Modelo Nulo" = "#8c564b"))
 
 ```
-
-<details>
-
 
 <h3>Fase 2: Geoprocesamiento y Análisis de Proximidad (QGIS / SF)</h3>
 
